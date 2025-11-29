@@ -40,7 +40,7 @@ pipeline {
       
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) { [cite: 7]
                     script {
-                        echo "The commit ID is: ${GIT_COMMIT}"
+                        echo "The commit ID is: ${GIT_COMMIT}" [cite: 8]
 
                         def image = docker.build(
        
@@ -54,11 +54,11 @@ pipeline {
                     }
                 }
             }
- 
-        } [cite: 10]
+        }
         
         stage('Run Ansible') {
             steps {
+            
                 withCredentials([
                     usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD'),
                     usernamePassword(credentialsId: 'vm1-userpass', usernameVariable: 'VM_USER', passwordVariable: 'VM_PASS'), [cite: 11]
@@ -68,32 +68,33 @@ pipeline {
                     script {
                         def remote = [:]
                         remote.name = 'vm1'
-     
+    
                         remote.host = '10.0.0.3' [cite: 12]
                         remote.user = VM_USER
                         remote.password = VM_PASS
                         remote.allowAnyHosts = true
  
                         // Put deploy_nginx.yml
-                        sshPut remote: remote, from: 'deploy_nginx.yml', into: '/home/leon/ansible/deploy_nginx.yml'
+                        // --- CORRECTED PATH TO /home/jaecho/ansible ---
+                        sshPut remote: remote, from: 'deploy_nginx.yml', into: '/home/jaecho/ansible/deploy_nginx.yml'
                         
+          
                         // NEW: Put monitoring configuration files
-                        sshPut remote: remote, from: 'prometheus.yml', into: '/home/leon/ansible/prometheus.yml'
-                        sshPut remote: remote, from: 'datasource.yml', into: '/home/leon/ansible/datasource.yml'
-                        
+                        sshPut remote: remote, from: 'prometheus.yml', into: '/home/jaecho/ansible/prometheus.yml'
+                        sshPut remote: remote, from: 'datasource.yml', into: '/home/jaecho/ansible/datasource.yml'
+                     
                         sshCommand remote: remote, 
                     
                         command: """
-                                ansible-playbook ansible/deploy_nginx.yml \
-                                    -e DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME} \
-                                    -e DOCKERHUB_PASSWORD=${DOCKERHUB_PASSWORD} \
-                                    -e GRAFANA_USER=${GRAFANA_USER} \
-                                    -e GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
+                            ansible-playbook ansible/deploy_nginx.yml \
+                                -e DOCKERHUB_USERNAME=${DOCKERHUB_USERNAME} \
+                                -e DOCKERHUB_PASSWORD=${DOCKERHUB_PASSWORD} \
+                                -e GRAFANA_USER=${GRAFANA_USER} \
+                                -e GRAFANA_PASSWORD=${GRAFANA_PASSWORD}
                             """ // Added GRAFANA_USER and GRAFANA_PASSWORD as extra vars
-                            // ,sudo: true
-                    }
     
-                } [cite: 16]
+                    }
+                }
             }
         }
     }
@@ -101,10 +102,10 @@ pipeline {
     //     success {
     //         sh """
     //         curl -X POST https://webexapis.com/v1/messages \
-    //         -H "Authorization: Bearer ${env.WEBEX_TOKEN}" [cite: 17] \
+    //         -H "Authorization: Bearer ${env.WEBEX_TOKEN}" [cite: 20] \
     //         -H "Content-Type: application/json" \
     //         -d '{"roomId":"${env.WEBEX_ROOM_ID}","text":"Pipeline ran successfully.
-    //         Build number is #${BUILD_NUMBER}!"}' [cite: 18]
+    //         Build number is #${BUILD_NUMBER}!"}' [cite: 21]
     //         """
     //     }
     //     failure {
@@ -112,7 +113,7 @@ pipeline {
     //         curl -X POST https://webexapis.com/v1/messages \
     //         -H "Authorization: Bearer ${env.WEBEX_TOKEN}" \
     //         -H "Content-Type: application/json" \
-    //         -d '{"roomId":"${env.WEBEX_ROOM_ID}","text":"Pipeline failed for build number #${BUILD_NUMBER}!"}' [cite: 19]
+    //         -d '{"roomId":"${env.WEBEX_ROOM_ID}","text":"Pipeline failed for build number #${BUILD_NUMBER}!"}' [cite: 22]
     //         """
     //     }
     // }
