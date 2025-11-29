@@ -1,0 +1,12 @@
+# Grafana Data Source Provisioning File (YAML)
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    # This URL points to the Prometheus server running on the same host (localhost)
+    url: http://localhost:9090
+    access: proxy
+    isDefault: true
+    version: 1
+    editable: true
